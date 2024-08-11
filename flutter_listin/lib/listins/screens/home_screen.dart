@@ -48,19 +48,57 @@ class _HomeScreenState extends State<HomeScreen> {
     refresh(query: query);
   }
 
-  void _cloudAction(CloudOption option) {
-    switch (option) {
-      case CloudOption.save:
-          saveOnServer();
-        break;
-      case CloudOption.sync:
-        syncWithServer();
-        break;
-      case CloudOption.remove:
-        clearServerData();
-        break;
-    }
+void _cloudAction(CloudOption option) {
+  String confirmationMessage = '';
+
+  switch (option) {
+    case CloudOption.save:
+      confirmationMessage = 'Você tem certeza que deseja salvar na nuvem?';
+      break;
+    case CloudOption.sync:
+      confirmationMessage = 'Você tem certeza que deseja sincronizar da nuvem?';
+      break;
+    case CloudOption.remove:
+      confirmationMessage = 'Você tem certeza que deseja remover os dados da nuvem?';
+      break;
   }
+
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text('Confirmação'),
+        content: Text(confirmationMessage),
+        actions: <Widget>[
+          TextButton(
+            child: const  Text('Cancelar'),
+            onPressed: () {
+              Navigator.of(context).pop(); // Fecha o diálogo sem fazer nada
+            },
+          ),
+          TextButton(
+            child: const  Text('Confirmar'),
+            onPressed: () {
+              Navigator.of(context).pop(); // Fecha o diálogo e continua
+              switch (option) {
+                case CloudOption.save:
+                  saveOnServer();
+                  break;
+                case CloudOption.sync:
+                  syncWithServer();
+                  break;
+                case CloudOption.remove:
+                  clearServerData();
+                  break;
+              }
+            },
+          ),
+        ],
+      );
+    },
+  );
+}
+
 
   @override
   Widget build(BuildContext context) {
