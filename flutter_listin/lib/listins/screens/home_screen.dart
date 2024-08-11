@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_listin/_core/services/dio_service.dart';
 import 'package:flutter_listin/authentication/models/mock_user.dart';
 import 'package:flutter_listin/listins/data/database.dart';
 import 'package:flutter_listin/listins/screens/widgets/home_drawer.dart';
@@ -18,6 +19,9 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   List<Listin> listListins = [];
   late AppDatabase _appDatabase;
+
+  DioService _dio = DioService();
+  
   TextEditingController searchController = TextEditingController();
 
   @override
@@ -287,7 +291,9 @@ void _cloudAction(CloudOption option) {
     refresh();
   }
   
-  void saveOnServer() {}
+  void saveOnServer() {
+    _dio.saveLocalToServer(_appDatabase);
+  }
   
   void syncWithServer() {}
   

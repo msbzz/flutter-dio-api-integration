@@ -4,5 +4,6 @@
 /readme.md
 *.txt
 *.zip
+*.env
  
  

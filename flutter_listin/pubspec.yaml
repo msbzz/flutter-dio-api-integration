@@ -14,6 +14,7 @@ dependencies:
   sqlite3_flutter_libs: ^0.5.20
   path_provider: ^2.1.2
   path: ^1.8.3
+  flutter_dotenv: ^5.0.2
   # Nativo
   cupertino_icons: ^1.0.2
 
@@ -40,6 +41,7 @@ flutter:
   uses-material-design: true
 
   assets:
+    - assets/.env
     - "assets/" 
 
 flutter_native_splash:
