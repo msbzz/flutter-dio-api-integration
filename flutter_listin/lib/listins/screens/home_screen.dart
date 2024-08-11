@@ -48,6 +48,20 @@ class _HomeScreenState extends State<HomeScreen> {
     refresh(query: query);
   }
 
+  void _cloudAction(CloudOption option) {
+    switch (option) {
+      case CloudOption.save:
+          saveOnServer();
+        break;
+      case CloudOption.sync:
+        syncWithServer();
+        break;
+      case CloudOption.remove:
+        clearServerData();
+        break;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -55,16 +69,46 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: const Text("Minhas listas"),
         actions: <Widget>[
-          PopupMenuButton<SortOption>(
-            onSelected: _sortListins,
-            itemBuilder: (BuildContext context) => <PopupMenuEntry<SortOption>>[
+          PopupMenuButton<dynamic>(
+            icon: const Icon(Icons.cloud), // Ícone do menu
+            onSelected: (value) {
+              if (value is SortOption) {
+                _sortListins(value);
+              } else if (value is CloudOption) {
+                _cloudAction(value);
+              }
+            },
+            itemBuilder: (BuildContext context) => <PopupMenuEntry<dynamic>>[
+              const PopupMenuItem<CloudOption>(
+                value: CloudOption.save,
+                child: ListTile(
+                  leading: Icon(Icons.upload),
+                  title: Text('Salvar na nuvem')),
+              ),
+              const PopupMenuItem<CloudOption>(
+                value: CloudOption.sync,
+                child: ListTile(
+                  leading: Icon(Icons.download),
+                  title:Text('Sincronizar da nuvem')),
+              ),
+              const PopupMenuItem<CloudOption>(
+                value: CloudOption.remove,
+                child: ListTile(
+                  leading: Icon(Icons.delete),
+                  title:Text('Remover dados da nuvem')),
+              ),
+              const PopupMenuDivider(), // Traço separador
               const PopupMenuItem<SortOption>(
                 value: SortOption.name,
-                child: Text('Ordenar por nome'),
+                child: ListTile(
+                  leading: Icon(Icons.arrow_upward),
+                  title:Text('Ordenar por nome')),
               ),
               const PopupMenuItem<SortOption>(
                 value: SortOption.date,
-                child: Text('Ordenar por data de alteração'),
+                child: ListTile(
+                  leading: Icon(Icons.arrow_downward),
+                  title:Text('Ordenar por data de alteração')),
               ),
             ],
           ),
@@ -204,6 +248,13 @@ class _HomeScreenState extends State<HomeScreen> {
     await _appDatabase.deleteListin(int.parse(model.id));
     refresh();
   }
+  
+  void saveOnServer() {}
+  
+  void syncWithServer() {}
+  
+  void clearServerData() {}
 }
 
 enum SortOption { name, date }
+enum CloudOption { save, sync, remove }
