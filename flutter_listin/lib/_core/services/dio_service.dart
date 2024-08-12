@@ -7,42 +7,43 @@ import 'package:flutter_listin/listins/data/database.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class DioService {
-  final Dio _dio = Dio();
+  final Dio _dio = Dio(BaseOptions(
+      baseUrl: dotenv.env['FIREBASE_URL']!,
+      contentType: "application/json; uft-8;",
+      responseType: ResponseType.json,
+      connectTimeout: const Duration(seconds: 5),
+      receiveTimeout: const Duration(seconds: 3)));
 
-  static String url = dotenv.env['FIREBASE_URL']!; 
+  // String url = dotenv.env['FIREBASE_URL']!;
 
   Future<void> saveLocalToServer(AppDatabase appDatabase) async {
     Map<String, dynamic> localData =
         await LocalDataHandler().localDataToMap(appdatabase: appDatabase);
-     
-    await _dio.put('${url}listin.json',
-        data: json.encode(
-          localData["listins"],
-        ),
-        options: Options(contentType: "application/json; uft-8;"));
+
+    await _dio.put(
+      'listin.json',
+      data: json.encode(
+        localData["listins"],
+      ),
+    );
   }
 
   getDataFromServer(AppDatabase appDatabase) async {
-    Response response = await _dio.get('${url}listin.json');
+    Response response = await _dio.get('listin.json');
 
-    //print('STATUS CODE : ${response.statusCode}');
-    // print('HEADERS : ${response.headers.toString()}');
-    //print('DATA : ${response.data}');
-    // print('TYPE DATA : ${response.data.runtimeType}');
-
-    if(response.data!=null){
-      if((response.data as List<dynamic>).isNotEmpty){
-        //print('dentro de .isNotEmpty');
-         Map<String,dynamic> map = {};
-         map["listins"] = response.data;
-         await LocalDataHandler().mapToLocalData(map: map, appdatabase: appDatabase,);
+    if (response.data != null) {
+      if ((response.data as List<dynamic>).isNotEmpty) {
+        Map<String, dynamic> map = {};
+        map["listins"] = response.data;
+        await LocalDataHandler().mapToLocalData(
+          map: map,
+          appdatabase: appDatabase,
+        );
       }
     }
   }
-  
 
   Future<void> clearServerData() async {
-    await _dio.delete('${url}listin.json');
+    await _dio.delete('listin.json');
   }
-
 }
