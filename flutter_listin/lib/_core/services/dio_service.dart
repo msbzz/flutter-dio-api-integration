@@ -25,9 +25,20 @@ class DioService {
   getDataFromServer(AppDatabase appDatabase) async {
     Response response = await _dio.get('${url}listin.json');
 
-    print('STATUS CODE : ${response.statusCode}');
-    print('HEADERS : ${response.headers.toString()}');
-    print('DATA : ${response.data}');
-    print('TYPE DATA : ${response.data.runtimeType}');
+    //print('STATUS CODE : ${response.statusCode}');
+    // print('HEADERS : ${response.headers.toString()}');
+    //print('DATA : ${response.data}');
+    // print('TYPE DATA : ${response.data.runtimeType}');
+
+    if(response.data!=null){
+      if((response.data as List<dynamic>).isNotEmpty){
+        //print('dentro de .isNotEmpty');
+         Map<String,dynamic> map = {};
+         map["listins"] = response.data;
+         await LocalDataHandler().mapToLocalData(map: map, appdatabase: appDatabase,);
+      }
+    }
+
+
   }
 }

@@ -295,8 +295,9 @@ void _cloudAction(CloudOption option) {
     _dio.saveLocalToServer(_appDatabase);
   }
   
-  void syncWithServer() {
-     _dio.getDataFromServer(_appDatabase);
+  void syncWithServer() async {
+     await _dio.getDataFromServer(_appDatabase);
+     await refresh(); 
   }
   
   void clearServerData() {}
