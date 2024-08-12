@@ -17,6 +17,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  bool isLoading = false; // Controla o estado de carregamento
   List<Listin> listListins = [];
   late AppDatabase _appDatabase;
 
@@ -26,9 +27,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void initState() {
-    _appDatabase = AppDatabase();
-    refresh();
     super.initState();
+    _appDatabase = AppDatabase();
+    _loadInitialData(); // Chama o método de carregamento inicial
   }
 
   @override
@@ -36,6 +37,18 @@ class _HomeScreenState extends State<HomeScreen> {
     _appDatabase.close();
     searchController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadInitialData() async {
+    setState(() {
+      isLoading = true; // Ativa o carregamento
+    });
+
+    await refresh(); // Carrega os dados iniciais
+
+    setState(() {
+      isLoading = false; // Desativa o carregamento após carregar os dados
+    });
   }
 
   void _sortListins(SortOption option) {
@@ -52,57 +65,56 @@ class _HomeScreenState extends State<HomeScreen> {
     refresh(query: query);
   }
 
-void _cloudAction(CloudOption option) {
-  String confirmationMessage = '';
+  void _cloudAction(CloudOption option) {
+    String confirmationMessage = '';
 
-  switch (option) {
-    case CloudOption.save:
-      confirmationMessage = 'Você tem certeza que deseja salvar na nuvem?';
-      break;
-    case CloudOption.sync:
-      confirmationMessage = 'Você tem certeza que deseja sincronizar da nuvem?';
-      break;
-    case CloudOption.remove:
-      confirmationMessage = 'Você tem certeza que deseja remover os dados da nuvem?';
-      break;
+    switch (option) {
+      case CloudOption.save:
+        confirmationMessage = 'Você tem certeza que deseja salvar na nuvem?';
+        break;
+      case CloudOption.sync:
+        confirmationMessage = 'Você tem certeza que deseja sincronizar da nuvem?';
+        break;
+      case CloudOption.remove:
+        confirmationMessage = 'Você tem certeza que deseja remover os dados da nuvem?';
+        break;
+    }
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirmação'),
+          content: Text(confirmationMessage),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancelar'),
+              onPressed: () {
+                Navigator.of(context).pop(); // Fecha o diálogo sem fazer nada
+              },
+            ),
+            TextButton(
+              child: const Text('Confirmar'),
+              onPressed: () {
+                Navigator.of(context).pop(); // Fecha o diálogo e continua
+                switch (option) {
+                  case CloudOption.save:
+                    saveOnServer();
+                    break;
+                  case CloudOption.sync:
+                    syncWithServer();
+                    break;
+                  case CloudOption.remove:
+                    clearServerData();
+                    break;
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
-
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: const Text('Confirmação'),
-        content: Text(confirmationMessage),
-        actions: <Widget>[
-          TextButton(
-            child: const  Text('Cancelar'),
-            onPressed: () {
-              Navigator.of(context).pop(); // Fecha o diálogo sem fazer nada
-            },
-          ),
-          TextButton(
-            child: const  Text('Confirmar'),
-            onPressed: () {
-              Navigator.of(context).pop(); // Fecha o diálogo e continua
-              switch (option) {
-                case CloudOption.save:
-                  saveOnServer();
-                  break;
-                case CloudOption.sync:
-                  syncWithServer();
-                  break;
-                case CloudOption.remove:
-                  clearServerData();
-                  break;
-              }
-            },
-          ),
-        ],
-      );
-    },
-  );
-}
-
 
   @override
   Widget build(BuildContext context) {
@@ -124,33 +136,33 @@ void _cloudAction(CloudOption option) {
               const PopupMenuItem<CloudOption>(
                 value: CloudOption.save,
                 child: ListTile(
-                  leading: Icon(Icons.upload),
-                  title: Text('Salvar na nuvem')),
+                    leading: Icon(Icons.upload),
+                    title: Text('Salvar na nuvem')),
               ),
               const PopupMenuItem<CloudOption>(
                 value: CloudOption.sync,
                 child: ListTile(
-                  leading: Icon(Icons.download),
-                  title:Text('Sincronizar da nuvem')),
+                    leading: Icon(Icons.download),
+                    title: Text('Sincronizar da nuvem')),
               ),
               const PopupMenuItem<CloudOption>(
                 value: CloudOption.remove,
                 child: ListTile(
-                  leading: Icon(Icons.delete),
-                  title:Text('Remover dados da nuvem')),
+                    leading: Icon(Icons.delete),
+                    title: Text('Remover dados da nuvem')),
               ),
               const PopupMenuDivider(), // Traço separador
               const PopupMenuItem<SortOption>(
                 value: SortOption.name,
                 child: ListTile(
-                  leading: Icon(Icons.arrow_upward),
-                  title:Text('Ordenar por nome')),
+                    leading: Icon(Icons.arrow_upward),
+                    title: Text('Ordenar por nome')),
               ),
               const PopupMenuItem<SortOption>(
                 value: SortOption.date,
                 child: ListTile(
-                  leading: Icon(Icons.arrow_downward),
-                  title:Text('Ordenar por data de alteração')),
+                    leading: Icon(Icons.arrow_downward),
+                    title: Text('Ordenar por data de alteração')),
               ),
             ],
           ),
@@ -162,66 +174,68 @@ void _cloudAction(CloudOption option) {
         },
         child: const Icon(Icons.add),
       ),
-      body: Column(
-        children: [
-          if (listListins.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: TextField(
-                controller: searchController,
-                decoration: InputDecoration(
-                  labelText: 'Buscar Listins',
-                  suffixIcon: IconButton(
-                    icon: const Icon(Icons.search),
-                    onPressed: () {
-                      _searchListins(searchController.text);
-                    },
-                  ),
-                ),
-                onSubmitted: _searchListins,
-              ),
-            ),
-          Expanded(
-            child: (listListins.isEmpty)
-                ? Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Image.asset("assets/bag.png"),
-                        const SizedBox(height: 32),
-                        const Text(
-                          "Nenhuma lista ainda.\nVamos criar a primeira?",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 18),
-                        ),
-                      ],
-                    ),
-                  )
-                : RefreshIndicator(
-                    onRefresh: () {
-                      return refresh();
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(32, 32, 32, 0),
-                      child: ListView(
-                        children: List.generate(
-                          listListins.length,
-                          (index) {
-                            Listin listin = listListins[index];
-                            return HomeListinItem(
-                              listin: listin,
-                              showOptionModal: showOptionModal,
-                            );
+      body: isLoading
+          ? Center(child: CircularProgressIndicator()) // Exibe o loading
+          : Column(
+              children: [
+                if (listListins.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: TextField(
+                      controller: searchController,
+                      decoration: InputDecoration(
+                        labelText: 'Buscar Listins',
+                        suffixIcon: IconButton(
+                          icon: const Icon(Icons.search),
+                          onPressed: () {
+                            _searchListins(searchController.text);
                           },
                         ),
                       ),
+                      onSubmitted: _searchListins,
                     ),
                   ),
-          ),
-        ],
-      ),
+                Expanded(
+                  child: (listListins.isEmpty)
+                      ? Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Image.asset("assets/bag.png"),
+                              const SizedBox(height: 32),
+                              const Text(
+                                "Nenhuma lista ainda.\nVamos criar a primeira?",
+                                textAlign: TextAlign.center,
+                                style: TextStyle(fontSize: 18),
+                              ),
+                            ],
+                          ),
+                        )
+                      : RefreshIndicator(
+                          onRefresh: () {
+                            return refresh();
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(32, 32, 32, 0),
+                            child: ListView(
+                              children: List.generate(
+                                listListins.length,
+                                (index) {
+                                  Listin listin = listListins[index];
+                                  return HomeListinItem(
+                                    listin: listin,
+                                    showOptionModal: showOptionModal,
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                        ),
+                ),
+              ],
+            ),
     );
   }
 
@@ -279,7 +293,7 @@ void _cloudAction(CloudOption option) {
           );
         },
       );
- 
+
       if (shouldDelete == true) {
         remove(model);
       }
@@ -290,16 +304,24 @@ void _cloudAction(CloudOption option) {
     await _appDatabase.deleteListin(int.parse(model.id));
     refresh();
   }
-  
+
   void saveOnServer() {
     _dio.saveLocalToServer(_appDatabase);
   }
-  
+
   void syncWithServer() async {
-     await _dio.getDataFromServer(_appDatabase);
-     await refresh(); 
+    setState(() {
+      isLoading = true; // Inicia o carregamento
+    });
+
+    await _dio.getDataFromServer(_appDatabase);
+    await refresh();
+
+    setState(() {
+      isLoading = false; // Finaliza o carregamento
+    });
   }
-  
+
   void clearServerData() {}
 }
 
