@@ -14,14 +14,20 @@ class DioService {
   Future<void> saveLocalToServer(AppDatabase appDatabase) async {
     Map<String, dynamic> localData =
         await LocalDataHandler().localDataToMap(appdatabase: appDatabase);
-    // print('localData >>> ${localData}');
-
-    // print('_dio.put >>> ${url}listin.json');
-
+     
     await _dio.put('${url}listin.json',
         data: json.encode(
           localData["listins"],
         ),
         options: Options(contentType: "application/json; uft-8;"));
+  }
+
+  getDataFromServer(AppDatabase appDatabase) async {
+    Response response = await _dio.get('${url}listin.json');
+
+    print('STATUS CODE : ${response.statusCode}');
+    print('HEADERS : ${response.headers.toString()}');
+    print('DATA : ${response.data}');
+    print('TYPE DATA : ${response.data.runtimeType}');
   }
 }
