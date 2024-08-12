@@ -4,6 +4,7 @@ import 'package:flutter_listin/authentication/models/mock_user.dart';
 import 'package:flutter_listin/listins/data/database.dart';
 import 'package:flutter_listin/listins/screens/widgets/home_drawer.dart';
 import 'package:flutter_listin/listins/screens/widgets/home_listin_item.dart';
+import 'package:flutter_listin/listins/screens/widgets/message_snack_bar.dart';
 import '../models/listin.dart';
 import 'widgets/listin_add_edit_modal.dart';
 import 'widgets/listin_options_modal.dart';
@@ -308,7 +309,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void saveOnServer() async {
-    await _dio.saveLocalToServer(_appDatabase);
+    await _dio.saveLocalToServer(_appDatabase).then((value) => messageSnackBar(
+        context: context,
+        message: 'Dados salvos no servidor',
+        isError: false));
   }
 
   void syncWithServer() async {
@@ -316,7 +320,10 @@ class _HomeScreenState extends State<HomeScreen> {
       isLoading = true; // Inicia o carregamento
     });
 
-    await _dio.getDataFromServer(_appDatabase);
+    await _dio.getDataFromServer(_appDatabase).then((value) => messageSnackBar(
+        context: context,
+        message: 'Dados restaurados no servidor',
+        isError: false));
     await refresh();
 
     setState(() {
@@ -325,8 +332,12 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void clearServerData() async {
-    await _dio.clearServerData();
-   }
+    await _dio.clearServerData().then((value) => messageSnackBar(
+        context: context,
+        message: 'Dados removidos do servidor',
+        isError: false));
+   
+  }
 }
 
 enum SortOption { name, date }
