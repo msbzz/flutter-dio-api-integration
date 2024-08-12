@@ -22,7 +22,7 @@ class _HomeScreenState extends State<HomeScreen> {
   late AppDatabase _appDatabase;
 
   DioService _dio = DioService();
-  
+
   TextEditingController searchController = TextEditingController();
 
   @override
@@ -73,10 +73,12 @@ class _HomeScreenState extends State<HomeScreen> {
         confirmationMessage = 'Você tem certeza que deseja salvar na nuvem?';
         break;
       case CloudOption.sync:
-        confirmationMessage = 'Você tem certeza que deseja sincronizar da nuvem?';
+        confirmationMessage =
+            'Você tem certeza que deseja sincronizar da nuvem?';
         break;
       case CloudOption.remove:
-        confirmationMessage = 'Você tem certeza que deseja remover os dados da nuvem?';
+        confirmationMessage =
+            'Você tem certeza que deseja remover os dados da nuvem?';
         break;
     }
 
@@ -305,8 +307,8 @@ class _HomeScreenState extends State<HomeScreen> {
     refresh();
   }
 
-  void saveOnServer() {
-    _dio.saveLocalToServer(_appDatabase);
+  void saveOnServer() async {
+    await _dio.saveLocalToServer(_appDatabase);
   }
 
   void syncWithServer() async {
@@ -322,8 +324,11 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  void clearServerData() {}
+  void clearServerData() async {
+    await _dio.clearServerData();
+   }
 }
 
 enum SortOption { name, date }
+
 enum CloudOption { save, sync, remove }

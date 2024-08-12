@@ -38,7 +38,11 @@ class DioService {
          await LocalDataHandler().mapToLocalData(map: map, appdatabase: appDatabase,);
       }
     }
-
-
   }
+  
+
+  Future<void> clearServerData() async {
+    await _dio.delete('${url}listin.json');
+  }
+
 }
