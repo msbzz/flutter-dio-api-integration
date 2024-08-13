@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_listin/_core/data/local_data_handler.dart';
+import 'package:flutter_listin/_core/services/dio_interceptor.dart';
 import 'package:flutter_listin/listins/data/database.dart';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -15,7 +16,7 @@ class DioService {
       receiveTimeout: const Duration(seconds: 13)));
   
   DioService(){
-    _dio.interceptors.add(LogInterceptor());
+    _dio.interceptors.add(DioInterceptor());
   }
  
   Future<void> saveLocalToServer(AppDatabase appDatabase) async {
