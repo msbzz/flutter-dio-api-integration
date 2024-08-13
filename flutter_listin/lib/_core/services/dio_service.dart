@@ -9,10 +9,10 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 class DioService {
   final Dio _dio = Dio(BaseOptions(
       baseUrl: dotenv.env['FIREBASE_URL']!,
-      contentType: "application/json; uft-8;",
+      contentType: "application/json; utf-8;",
       responseType: ResponseType.json,
-      connectTimeout: const Duration(seconds: 5),
-      receiveTimeout: const Duration(seconds: 3)));
+      connectTimeout: const Duration(seconds: 15),
+      receiveTimeout: const Duration(seconds: 13)));
 
   // String url = dotenv.env['FIREBASE_URL']!;
 
@@ -21,7 +21,7 @@ class DioService {
         await LocalDataHandler().localDataToMap(appdatabase: appDatabase);
 
     await _dio.put(
-      'listin.json',
+      'listins.json',
       data: json.encode(
         localData["listins"],
       ),
@@ -29,21 +29,36 @@ class DioService {
   }
 
   getDataFromServer(AppDatabase appDatabase) async {
-    Response response = await _dio.get('listin.json');
+
+
+    Response response = await _dio.get('listins.json',
+        queryParameters: {"orderBy": '"name"', "startAt": 0,});
+
+       // print('response.data ===>>>  ${response.data}');
 
     if (response.data != null) {
-      if ((response.data as List<dynamic>).isNotEmpty) {
-        Map<String, dynamic> map = {};
-        map["listins"] = response.data;
-        await LocalDataHandler().mapToLocalData(
-          map: map,
-          appdatabase: appDatabase,
-        );
+      Map<String, dynamic> map = {};
+ 
+      if (response.data.runtimeType == List) {
+        if ((response.data as List<dynamic>).isNotEmpty) {
+          map["listins"] = response.data;
+        }
+      } else {
+        List<Map<String, dynamic>> tempList = [];
+        for (var mapResponse in (response.data as Map).values) {
+          tempList.add(mapResponse);
+        }
+        map["listins"] = tempList;
       }
+
+      await LocalDataHandler().mapToLocalData(
+        map: map,
+        appdatabase: appDatabase,
+      );
     }
   }
 
   Future<void> clearServerData() async {
-    await _dio.delete('listin.json');
+    await _dio.delete('listins.json');
   }
 }
