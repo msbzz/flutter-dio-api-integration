@@ -13,9 +13,11 @@ class DioService {
       responseType: ResponseType.json,
       connectTimeout: const Duration(seconds: 15),
       receiveTimeout: const Duration(seconds: 13)));
-
-  // String url = dotenv.env['FIREBASE_URL']!;
-
+  
+  DioService(){
+    _dio.interceptors.add(LogInterceptor());
+  }
+ 
   Future<void> saveLocalToServer(AppDatabase appDatabase) async {
     Map<String, dynamic> localData =
         await LocalDataHandler().localDataToMap(appdatabase: appDatabase);
