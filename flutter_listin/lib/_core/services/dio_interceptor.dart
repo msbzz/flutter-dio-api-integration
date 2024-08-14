@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_listin/_core/services/dio_endpoints.dart';
 import 'package:logger/logger.dart';
 
 class DioInterceptor extends Interceptor {
@@ -24,7 +25,7 @@ class DioInterceptor extends Interceptor {
     }
     _logger.w(log);
 
-    Dio().post('${dotenv.env["FIREBASE_URL"]!}/logs.json', data: {"request": log});
+    Dio().post('${DioEndpoinst.devBaseUrl}/${DioEndpoinst.logs}', data: {"request": log});
 
     super.onRequest(options, handler);
   }
@@ -44,7 +45,7 @@ class DioInterceptor extends Interceptor {
     }
     _logger.i(log);
 
-    Dio().post('${dotenv.env["FIREBASE_URL"]!}/logs.json', data: {"response": log});
+    Dio().post('${DioEndpoinst.devBaseUrl}/${DioEndpoinst.logs}', data: {"response": log});
 
     super.onResponse(response, handler);
   }
@@ -71,7 +72,7 @@ class DioInterceptor extends Interceptor {
 
     _logger.e(log);
 
-    Dio().post('${dotenv.env["FIREBASE_URL"]!}/logs.json', data: {"error": log});
+    Dio().post('${DioEndpoinst.devBaseUrl}/${DioEndpoinst.logs}', data: {"error": log});
 
     super.onError(err, handler);
   }

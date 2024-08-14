@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_listin/_core/data/local_data_handler.dart';
+import 'package:flutter_listin/_core/services/dio_endpoints.dart';
 import 'package:flutter_listin/_core/services/dio_interceptor.dart';
 import 'package:flutter_listin/listins/data/database.dart';
 
@@ -9,8 +10,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class DioService {
   final Dio _dio = Dio(BaseOptions(
-      baseUrl: dotenv.env['FIREBASE_URL']!,
-      contentType: "application/json; utf-8;",
+      baseUrl:DioEndpoinst.devBaseUrl,
+      contentType: Headers.jsonContentType,
       responseType: ResponseType.json,
       connectTimeout: const Duration(seconds: 15),
       receiveTimeout: const Duration(seconds: 13)));
@@ -25,7 +26,7 @@ class DioService {
 
     try {
       await _dio.put(
-        'listins.json',
+        DioEndpoinst.listins,
         data: json.encode(
           localData["listins"],
         ),
@@ -43,12 +44,15 @@ class DioService {
   }
 
   Future<String?> getDataFromServer(AppDatabase appDatabase) async {
+ 
+
     try {
-      Response response = await _dio.get('listins.json', queryParameters: {
+      Response response = await _dio.get(DioEndpoinst.listins, queryParameters: {
         "orderBy": '"name"',
         "startAt": 0,
       });
-
+     
+   
       if (response.data != null) {
         Map<String, dynamic> map = {};
 
@@ -83,7 +87,7 @@ class DioService {
 
   Future<String?> clearServerData() async {
     try {
-      await _dio.delete('listins.json');
+      await _dio.delete(DioEndpoinst.listins);
       return null; // Retorna null para indicar sucesso
     } on DioException catch (e) {
       if (e.response != null && e.response!.data != null) {
