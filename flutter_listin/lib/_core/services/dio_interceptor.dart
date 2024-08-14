@@ -10,11 +10,10 @@ class DioInterceptor extends Interceptor {
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
-    //print("${DateTime.now()} | Uma requisição foi feita!");
     String log = "";
     log += "REQUISIÇÃO\n";
     log += "Timestamp: ${DateTime.now()}\n";
-    log += "Método: ${options.method}";
+    log += "Método: ${options.method}\n";
     log += "URL: ${options.uri}\n";
     log +=
         "Cabeçalho: ${JsonEncoder.withIndent("  ").convert(options.headers)}\n";
@@ -25,28 +24,55 @@ class DioInterceptor extends Interceptor {
     }
     _logger.w(log);
 
-    Dio().post('${dotenv.env["FIREBASE_URL"]!}/logs.json',
-        data: {"request": log});
+    Dio().post('${dotenv.env["FIREBASE_URL"]!}/logs.json', data: {"request": log});
 
     super.onRequest(options, handler);
   }
 
   @override
   void onResponse(Response response, ResponseInterceptorHandler handler) {
-    print("${DateTime.now()} | Uma resposta foi recebida!");
+    String log = "";
+    log += "RESPOSTA\n";
+    log += "Timestamp: ${DateTime.now()}\n";
+    log += "Status: ${response.statusCode}\n";
+    log +=
+        "Cabeçalho: ${JsonEncoder.withIndent("  ").convert(response.headers.map)}\n";
+
+    if (response.data != null) {
+      log +=
+          "Corpo: ${JsonEncoder.withIndent('  ').convert(response.data)}\n";
+    }
+    _logger.i(log);
+
+    Dio().post('${dotenv.env["FIREBASE_URL"]!}/logs.json', data: {"response": log});
+
     super.onResponse(response, handler);
   }
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
-    print("${DateTime.now()} | Um erro aconteceu!");
+    String log = "";
+    log += "ERRO\n";
+    log += "Timestamp: ${DateTime.now()}\n";
+    log += "Mensagem: ${err.message}\n";
+    log += "URL: ${err.requestOptions.uri}\n";
+
+    if (err.response != null) {
+      log += "Status: ${err.response?.statusCode}\n";
+      log +=
+          "Cabeçalho: ${JsonEncoder.withIndent("  ").convert(err.response?.headers.map)}\n";
+      if (err.response?.data != null) {
+        log +=
+            "Corpo: ${JsonEncoder.withIndent('  ').convert(err.response?.data)}\n";
+      }
+    } else {
+      log += "Detalhes: ${err.error}\n";
+    }
+
+    _logger.e(log);
+
+    Dio().post('${dotenv.env["FIREBASE_URL"]!}/logs.json', data: {"error": log});
+
     super.onError(err, handler);
   }
-
-  // final Logger _logger = Logger(
-  //   printer: PrettyPrinter(
-  //       methodCount: 0,
-  //       printEmojis: false,
-  //   ),
-  // )
 }

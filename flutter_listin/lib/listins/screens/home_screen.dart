@@ -309,10 +309,28 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void saveOnServer() async {
-    await _dio.saveLocalToServer(_appDatabase).then((value) => messageSnackBar(
+    try {
+      String? result = await _dio.saveLocalToServer(_appDatabase);
+      if (result == null) {
+        messageSnackBar(
+          context: context,
+          message: 'Dados salvos no servidor',
+          isError: false,
+        );
+      } else {
+        messageSnackBar(
+          context: context,
+          message: result,
+          isError: true,
+        );
+      }
+    } catch (error) {
+      messageSnackBar(
         context: context,
-        message: 'Dados salvos no servidor',
-        isError: false));
+        message: 'Erro inesperado: ${error.toString()}',
+        isError: true,
+      );
+    }
   }
 
   void syncWithServer() async {
@@ -320,10 +338,29 @@ class _HomeScreenState extends State<HomeScreen> {
       isLoading = true; // Inicia o carregamento
     });
 
-    await _dio.getDataFromServer(_appDatabase).then((value) => messageSnackBar(
+    try {
+      String? result = await _dio.getDataFromServer(_appDatabase);
+      if (result == null) {
+        messageSnackBar(
+          context: context,
+          message: 'Dados sincronizados do servidor',
+          isError: false,
+        );
+        await refresh();
+      } else {
+        messageSnackBar(
+          context: context,
+          message: result,
+          isError: true,
+        );
+      }
+    } catch (error) {
+      messageSnackBar(
         context: context,
-        message: 'Dados restaurados no servidor',
-        isError: false));
+        message: 'Erro inesperado: ${error.toString()}',
+        isError: true,
+      );
+    }
     await refresh();
 
     setState(() {
@@ -332,11 +369,28 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void clearServerData() async {
-    await _dio.clearServerData().then((value) => messageSnackBar(
+    try {
+      String? result = await _dio.clearServerData();
+      if (result == null) {
+        messageSnackBar(
+          context: context,
+          message: 'Dados removidos do servidor',
+          isError: false,
+        );
+      } else {
+        messageSnackBar(
+          context: context,
+          message: result,
+          isError: true,
+        );
+      }
+    } catch (error) {
+      messageSnackBar(
         context: context,
-        message: 'Dados removidos do servidor',
-        isError: false));
-   
+        message: 'Erro inesperado: ${error.toString()}',
+        isError: true,
+      );
+    }
   }
 }
 
