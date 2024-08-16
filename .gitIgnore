@@ -1,10 +1,9 @@
 /gabaritos_zip/
 /flutter_listin_/
-/info/
-/readme.md
 *.txt
 *.zip
 *.env
 copyCollections.js
+/temp/
  
  
